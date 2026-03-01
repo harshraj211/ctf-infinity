@@ -333,7 +333,13 @@
   <!-- Firebase JS SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult
+    } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 
     const firebaseConfig = {
       apiKey: "<%= process.env.FIREBASE_API_KEY %>",
@@ -353,7 +359,7 @@
       errorBox.textContent = msg;
       errorBox.style.display = 'block';
       loadingBox.style.display = 'none';
-      googleBtn.disabled = false;
+      if (googleBtn) googleBtn.disabled = false;
     }
 
     async function verifyAndRedirect(user) {
@@ -371,17 +377,43 @@
       }
     }
 
-    googleBtn.addEventListener('click', async () => {
-      errorBox.style.display = 'none';
-      loadingBox.style.display = 'block';
-      googleBtn.disabled = true;
-      try {
-        const cred = await signInWithPopup(auth, provider);
-        await verifyAndRedirect(cred.user);
-      } catch (e) {
-        showError(e.message.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, ''));
+    // Check if returning from Google redirect (production flow)
+    loadingBox.style.display = 'block';
+    if (googleBtn) googleBtn.disabled = true;
+
+    getRedirectResult(auth).then(async (result) => {
+      if (result && result.user) {
+        await verifyAndRedirect(result.user);
+      } else {
+        loadingBox.style.display = 'none';
+        if (googleBtn) googleBtn.disabled = false;
       }
+    }).catch((e) => {
+      loadingBox.style.display = 'none';
+      if (googleBtn) googleBtn.disabled = false;
     });
+
+    // Button click handler
+    if (googleBtn) {
+      googleBtn.addEventListener('click', async () => {
+        errorBox.style.display = 'none';
+        loadingBox.style.display = 'block';
+        googleBtn.disabled = true;
+
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+        try {
+          if (isLocal) {
+            const cred = await signInWithPopup(auth, provider);
+            await verifyAndRedirect(cred.user);
+          } else {
+            await signInWithRedirect(auth, provider);
+          }
+        } catch (e) {
+          showError(e.message.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, ''));
+        }
+      });
+    }
   </script>
 
   <!-- Theme Toggle Script -->
