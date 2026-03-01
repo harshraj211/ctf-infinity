@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title : 'CTF INFINITY' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/challenges" class="nav-brand">CTF<span>∞</span></a>
+      <div class="quantumx-nav-badge">QUANTUMX</div>
+    </div>
+    <div class="nav-links">
+      <a href="/challenges" class="<%= typeof title !== 'undefined' && title.includes('Challenge') ? 'active' : '' %>">Challenges</a>
+      <a href="/vuln/search">Lab</a>
+      <% if (locals.user) { %>
+        <span class="nav-score">⚡ <%= user.score %> pts</span>
+        <span class="nav-user">@<%= user.username %></span>
+        <a href="/logout" class="btn-sm">Logout</a>
+      <% } %>
+      <% if (locals.isAdmin) { %>
+        <a href="/creator" class="btn-sm creator-btn">Creator</a>
+      <% } %>
+      <button class="theme-toggle-nav" id="theme-toggle" title="Toggle theme">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <%- body %>
+  </main>
+
+  <footer class="site-footer">
+    <span>CTF INFINITY · QUANTUMX</span>
+    <span class="footer-dev">crafted by <strong>harsh_raj</strong></span>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Theme persistence across all pages
+    const html = document.documentElement;
+    const saved = localStorage.getItem('ctf-theme') || 'light';
+    html.setAttribute('data-theme', saved);
+    document.getElementById('theme-icon').textContent = saved === 'dark' ? '🌙' : '☀️';
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('ctf-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? '🌙' : '☀️';
+    });
+  </script>
+</body>
+</html>

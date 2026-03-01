@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTF INFINITY — QUANTUMX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* ── Theme Variables ── */
+    [data-theme="dark"] {
+      --auth-bg: #0d0f14;
+      --auth-card-bg: rgba(255,255,255,0.04);
+      --auth-card-border: rgba(255,255,255,0.1);
+      --auth-text: #ffffff;
+      --auth-text-muted: rgba(255,255,255,0.4);
+      --auth-input-bg: rgba(255,255,255,0.06);
+      --auth-input-border: rgba(255,255,255,0.12);
+      --auth-input-color: #fff;
+      --auth-input-placeholder: rgba(255,255,255,0.2);
+      --auth-tab-inactive: rgba(255,255,255,0.45);
+      --orb-opacity: 0.25;
+      --grid-color: rgba(79,110,247,0.08);
+      --theme-btn-bg: rgba(255,255,255,0.08);
+      --theme-btn-border: rgba(255,255,255,0.15);
+      --theme-btn-color: rgba(255,255,255,0.7);
+    }
+    [data-theme="light"] {
+      --auth-bg: #f0f2f7;
+      --auth-card-bg: rgba(255,255,255,0.9);
+      --auth-card-border: rgba(0,0,0,0.08);
+      --auth-text: #0d0f14;
+      --auth-text-muted: rgba(0,0,0,0.4);
+      --auth-input-bg: #f8f9fc;
+      --auth-input-border: #e2e6ef;
+      --auth-input-color: #0d0f14;
+      --auth-input-placeholder: #9199b0;
+      --auth-tab-inactive: #5a6380;
+      --orb-opacity: 0.12;
+      --grid-color: rgba(79,110,247,0.05);
+      --theme-btn-bg: rgba(0,0,0,0.06);
+      --theme-btn-border: rgba(0,0,0,0.1);
+      --theme-btn-color: #5a6380;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Syne', system-ui, sans-serif;
+      background: var(--auth-bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      transition: background 0.4s ease;
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background: var(--theme-btn-bg);
+      border: 1px solid var(--theme-btn-border);
+      border-radius: 50px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--theme-btn-color);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      letter-spacing: 0.03em;
+    }
+    .theme-toggle:hover {
+      background: var(--theme-btn-bg);
+      border-color: var(--accent, #4f6ef7);
+      color: var(--accent, #4f6ef7);
+      transform: scale(1.04);
+    }
+    .theme-icon { font-size: 1rem; transition: transform 0.5s ease; }
+    .theme-toggle:hover .theme-icon { transform: rotate(20deg); }
+
+    /* Background */
+    .auth-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 48px 48px;
+      transition: background 0.4s;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: var(--orb-opacity);
+      transition: opacity 0.4s;
+    }
+    .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #4f6ef7, transparent 70%); top: -100px; right: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #8b5cf6, transparent 70%); bottom: -80px; left: -80px; }
+
+    /* Container */
+    .auth-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+
+    /* Brand */
+    .auth-brand { text-align: center; margin-bottom: 28px; }
+    .brand-logo {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--auth-text);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+    .brand-logo span { color: #4f6ef7; }
+
+    /* QUANTUMX badge */
+    .quantumx-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 4px 14px 4px 10px;
+      background: linear-gradient(135deg, rgba(79,110,247,0.15), rgba(139,92,246,0.15));
+      border: 1px solid rgba(79,110,247,0.3);
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #818cf8;
+      backdrop-filter: blur(8px);
+      animation: pulse-border 3s ease-in-out infinite;
+    }
+    .quantumx-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4f6ef7;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+    @keyframes pulse-border {
+      0%,100%{ border-color: rgba(79,110,247,0.3); box-shadow: none; }
+      50%{ border-color: rgba(79,110,247,0.6); box-shadow: 0 0 12px rgba(79,110,247,0.2); }
+    }
+
+    .brand-tagline {
+      font-size: 0.78rem;
+      color: var(--auth-text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 10px;
+      transition: color 0.3s;
+    }
+
+    /* Card */
+    .auth-card {
+      background: var(--auth-card-bg);
+      border: 1px solid var(--auth-card-border);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    /* Google button */
+    .btn-google {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 13px;
+      background: #fff;
+      border: 1.5px solid #e2e6ef;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0d0f14;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .btn-google:hover {
+      background: #f8f9fc;
+      border-color: #4f6ef7;
+      box-shadow: 0 4px 20px rgba(79,110,247,0.15);
+      transform: translateY(-1px);
+    }
+    .btn-google svg { flex-shrink: 0; }
+
+    /* Divider */
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--auth-input-border);
+    }
+    .auth-divider span {
+      font-size: 0.75rem;
+      color: var(--auth-text-muted);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* Error */
+    .auth-error {
+      display: none;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #fca5a5;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .auth-loading {
+      display: none;
+      text-align: center;
+      color: var(--auth-text-muted);
+      padding: 8px 0;
+      font-size: 0.85rem;
+    }
+
+    /* Footer */
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.75rem;
+      color: var(--auth-text-muted);
+      transition: color 0.3s;
+    }
+    .auth-footer a {
+      color: #4f6ef7;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .dev-credit {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      color: var(--auth-text-muted);
+      letter-spacing: 0.04em;
+      opacity: 0.6;
+    }
+    .dev-credit span { color: #818cf8; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+    <span class="theme-icon" id="theme-icon">🌙</span>
+    <span id="theme-label">Dark</span>
+  </button>
+
+  <div class="auth-bg">
+    <div class="grid-overlay"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="brand-logo">CTF<span>∞</span></div>
+      <div class="quantumx-badge">
+        <div class="quantumx-dot"></div>
+        QUANTUMX
+      </div>
+      <p class="brand-tagline">Capture. Learn. Dominate.</p>
+    </div>
+
+    <div class="auth-card">
+      <div id="auth-error" class="auth-error"></div>
+      <div id="auth-loading" class="auth-loading">⚡ Authenticating...</div>
+
+      <button class="btn-google" id="google-btn">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.6-3.5-11.2-8.2l-6.5 5C9.5 40.1 16.2 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41 35.1 44 30 44 24c0-1.3-.1-2.7-.4-4z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><span>SECURE · VERIFIED · FREE</span></div>
+
+      <p style="text-align:center;font-size:0.8rem;color:var(--auth-text-muted);line-height:1.6;">
+        Sign in instantly with your Google account.<br/>
+        No passwords. No verification emails.
+      </p>
+    </div>
+
+    <p class="auth-footer">
+      CTF INFINITY &mdash; <a href="#">QUANTUMX</a> Security Platform
+    </p>
+    <p class="dev-credit">crafted by <span>harsh_raj</span> · powered by QUANTUMX</p>
+  </div>
+
+  <!-- Firebase JS SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "<%= process.env.FIREBASE_API_KEY %>",
+      authDomain: "<%= process.env.FIREBASE_AUTH_DOMAIN %>",
+      projectId: "<%= process.env.FIREBASE_PROJECT_ID %>",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const errorBox = document.getElementById('auth-error');
+    const loadingBox = document.getElementById('auth-loading');
+    const googleBtn = document.getElementById('google-btn');
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+      loadingBox.style.display = 'none';
+      googleBtn.disabled = false;
+    }
+
+    async function verifyAndRedirect(user) {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/challenges';
+      } else {
+        showError(data.error || 'Authentication failed.');
+      }
+    }
+
+    googleBtn.addEventListener('click', async () => {
+      errorBox.style.display = 'none';
+      loadingBox.style.display = 'block';
+      googleBtn.disabled = true;
+      try {
+        const cred = await signInWithPopup(auth, provider);
+        await verifyAndRedirect(cred.user);
+      } catch (e) {
+        showError(e.message.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, ''));
+      }
+    });
+  </script>
+
+  <!-- Theme Toggle Script -->
+  <script>
+    const html = document.documentElement;
+    const toggleBtn = document.getElementById('theme-toggle');
+    const icon = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+
+    // Load saved theme or default dark
+    const saved = localStorage.getItem('ctf-theme') || 'dark';
+    setTheme(saved);
+
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('ctf-theme', theme);
+      if (theme === 'dark') {
+        icon.textContent = '🌙';
+        label.textContent = 'Dark';
+      } else {
+        icon.textContent = '☀️';
+        label.textContent = 'Light';
+      }
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

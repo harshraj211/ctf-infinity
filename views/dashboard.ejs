@@ -1,0 +1,54 @@
+<div class="page-header">
+  <h1>Challenges</h1>
+  <p class="page-subtitle">Exploit. Learn. Capture the flag.</p>
+</div>
+
+<!-- Category Filter -->
+<div class="category-filter">
+  <button class="filter-btn active" data-cat="all">All</button>
+  <% categories.forEach(cat => { %>
+    <button class="filter-btn" data-cat="<%= cat %>"><%= cat %></button>
+  <% }) %>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-val"><%= challenges.length %></span>
+    <span class="stat-label">Total</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val"><%= challenges.filter(c => c.solved).length %></span>
+    <span class="stat-label">Solved</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val"><%= challenges.filter(c => !c.solved).length %></span>
+    <span class="stat-label">Remaining</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val">⚡ <%= user ? user.score : 0 %></span>
+    <span class="stat-label">Your Score</span>
+  </div>
+</div>
+
+<!-- Challenge Grid -->
+<div class="challenge-grid" id="challenge-grid">
+  <% challenges.forEach(c => { %>
+    <a href="/challenges/<%= c.id %>" class="challenge-card <%= c.solved ? 'solved' : '' %>" data-cat="<%= c.category %>">
+      <div class="card-top">
+        <span class="badge badge-<%= c.category.toLowerCase().replace(/\s+/g,'-').replace(/[()]/g,'') %>">
+          <%= c.category %>
+        </span>
+        <span class="difficulty difficulty-<%= c.difficulty.toLowerCase() %>"><%= c.difficulty %></span>
+      </div>
+      <h3 class="card-title"><%= c.title %></h3>
+      <p class="card-desc"><%= c.description.slice(0, 80) %>...</p>
+      <div class="card-footer">
+        <span class="card-points">⚡ <%= c.points %> pts</span>
+        <% if (c.solved) { %>
+          <span class="solved-badge">✓ Solved</span>
+        <% } %>
+      </div>
+    </a>
+  <% }) %>
+</div>

@@ -1,0 +1,40 @@
+<div class="vuln-page">
+  <div class="vuln-header">
+    <span class="vuln-label">🐛 SQLi Challenge</span>
+    <h1>Shop Search</h1>
+    <p>Search for products in our catalog.</p>
+  </div>
+
+  <div class="vuln-card">
+    <form action="/vuln/search" method="GET" class="search-form">
+      <input type="text" name="q" value="<%= query %>" placeholder="Search products..." autofocus />
+      <button type="submit" class="btn-primary">Search</button>
+    </form>
+
+    <% if (error) { %>
+      <div class="vuln-error">
+        <code><%= error %></code>
+      </div>
+    <% } %>
+
+    <% if (results && results.length > 0) { %>
+      <div class="results-table">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Price</th></tr></thead>
+          <tbody>
+            <% results.forEach(r => { %>
+              <tr>
+                <td><%= r.id %></td>
+                <td><%= r.name %></td>
+                <td><%= r.description %></td>
+                <td>$<%= r.price %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else if (query) { %>
+      <p class="no-results">No results found for "<%= query %>"</p>
+    <% } %>
+  </div>
+</div>

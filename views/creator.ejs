@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="creator-page">
+
+<% if (typeof loginPage !== 'undefined' && loginPage) { %>
+  <!-- Admin Login -->
+  <div class="creator-login-wrap">
+    <div class="creator-login-card">
+      <div class="creator-brand">🔐 Creator Portal</div>
+      <p>Restricted access. Authorised personnel only.</p>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+      <form action="/creator/login" method="POST">
+        <div class="form-group">
+          <label>Admin Password</label>
+          <input type="password" name="password" placeholder="••••••••••••" required autofocus />
+        </div>
+        <button type="submit" class="btn-primary full-width">Authenticate →</button>
+      </form>
+    </div>
+  </div>
+
+<% } else { %>
+  <!-- Admin Dashboard -->
+  <div class="creator-layout">
+    <aside class="creator-sidebar">
+      <div class="sidebar-brand">CTF<span>∞</span> <small>Creator</small></div>
+      <nav class="sidebar-nav">
+        <a href="#challenges" class="active">Challenges</a>
+        <a href="/challenges" target="_blank">View Site →</a>
+      </nav>
+      <form action="/creator/logout" method="POST" class="sidebar-logout">
+        <button type="submit" class="btn-sm danger">Logout</button>
+      </form>
+    </aside>
+
+    <main class="creator-main">
+      <div class="creator-header">
+        <h1>Challenge Manager</h1>
+        <button class="btn-primary" id="new-challenge-btn">+ New Challenge</button>
+      </div>
+
+      <!-- New / Edit Challenge Form -->
+      <div class="creator-form-card" id="challenge-form" style="display:none">
+        <h2 id="form-title">New Challenge</h2>
+        <form id="challenge-form-el" action="/creator/challenges" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="_editId" id="edit-id" value="" />
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" name="title" id="f-title" required placeholder="e.g. Hidden Bytes" />
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select name="category" id="f-category">
+                <option>Web</option>
+                <option>OSINT</option>
+                <option>Digital Forensics</option>
+                <option>Steganography</option>
+                <option>Cryptography</option>
+                <option>Reverse Engineering</option>
+                <option>Miscellaneous</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Difficulty</label>
+              <select name="difficulty" id="f-difficulty">
+                <option>Easy</option>
+                <option>Medium</option>
+                <option>Hard</option>
+                <option>Insane</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Points</label>
+              <input type="number" name="points" id="f-points" required min="1" placeholder="100" />
+            </div>
+            <div class="form-group full-span">
+              <label>Description</label>
+              <textarea name="description" id="f-description" rows="3" required placeholder="Challenge description visible to players..."></textarea>
+            </div>
+            <div class="form-group full-span">
+              <label>Flag</label>
+              <input type="text" name="flag" id="f-flag" required placeholder="FLAG{...}" class="mono" />
+            </div>
+            <div class="form-group full-span">
+              <label>Hint <span class="optional">(optional)</span></label>
+              <input type="text" name="hint" id="f-hint" placeholder="Optional hint for players..." />
+            </div>
+            <div class="form-group full-span">
+              <label>
+                Challenge File <span class="optional">(optional — raw upload, no compression)</span>
+              </label>
+              <input type="file" name="file" id="f-file" />
+              <p class="file-note">Supports: images, PCAPs, ZIPs, any binary. Metadata &amp; EXIF fully preserved.</p>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="form-submit-btn">Create Challenge</button>
+            <button type="button" class="btn-ghost" id="cancel-form-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Challenges Table -->
+      <div class="challenges-table-wrap">
+        <table class="challenges-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Difficulty</th>
+              <th>Points</th>
+              <th>File</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (challenges && challenges.length > 0) { %>
+              <% challenges.forEach(c => { %>
+                <tr>
+                  <td><strong><%= c.title %></strong></td>
+                  <td><span class="badge badge-<%= c.category.toLowerCase().replace(/\s+/g,'-').replace(/[()]/g,'') %>"><%= c.category %></span></td>
+                  <td><span class="difficulty difficulty-<%= c.difficulty.toLowerCase() %>"><%= c.difficulty %></span></td>
+                  <td>⚡ <%= c.points %></td>
+                  <td>
+                    <% if (c.fileUrl) { %>
+                      <a href="<%= c.fileUrl %>" target="_blank" class="file-link">📎 File</a>
+                    <% } else { %>
+                      <span class="no-file">—</span>
+                    <% } %>
+                  </td>
+                  <td class="action-cell">
+                    <button class="btn-sm edit-btn"
+                      data-id="<%= c.id %>"
+                      data-title="<%= c.title %>"
+                      data-category="<%= c.category %>"
+                      data-difficulty="<%= c.difficulty %>"
+                      data-points="<%= c.points %>"
+                      data-description="<%= c.description %>"
+                      data-flag="<%= c.flag %>"
+                      data-hint="<%= c.hint || '' %>"
+                    >Edit</button>
+                    <form action="/creator/challenges/<%= c.id %>/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete this challenge?')">
+                      <button type="submit" class="btn-sm danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="6" class="empty-table">No challenges yet. Create your first one!</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+<% } %>
+
+<script src="/js/creator.js"></script>
+</body>
+</html>

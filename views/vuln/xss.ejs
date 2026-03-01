@@ -1,0 +1,36 @@
+<div class="vuln-page">
+  <div class="vuln-header">
+    <span class="vuln-label">🐛 XSS Challenge</span>
+    <h1>Community Board</h1>
+    <p>Share your thoughts with the community.</p>
+  </div>
+
+  <% if (reflectedMsg) { %>
+    <div class="reflected-msg">
+      <!-- ❌ VULNERABLE: unescaped output -->
+      <strong>System message:</strong> <%- reflectedMsg %>
+    </div>
+  <% } %>
+
+  <div class="vuln-card">
+    <h3>Leave a Comment</h3>
+    <form action="/vuln/xss" method="POST" class="comment-form">
+      <textarea name="comment" rows="3" placeholder="Write something..."></textarea>
+      <button type="submit" class="btn-primary">Post</button>
+    </form>
+
+    <div class="comments-list">
+      <h3>Comments</h3>
+      <% comments.forEach(c => { %>
+        <div class="comment-item">
+          <div class="comment-header">
+            <strong><%= c.user %></strong>
+            <span class="comment-date"><%= c.ts %></span>
+          </div>
+          <!-- ❌ VULNERABLE: stored XSS — text rendered unescaped -->
+          <div class="comment-text"><%- c.text %></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<div class="vuln-page">
+  <div class="vuln-header">
+    <span class="vuln-label">🐛 SSRF Challenge</span>
+    <h1>Webhook Tester</h1>
+    <p>Test your webhook endpoints — paste a URL and we'll fetch it for you.</p>
+  </div>
+
+  <div class="vuln-card">
+    <form action="/vuln/fetch" method="GET" class="search-form">
+      <input type="text" name="url" value="<%= requestedUrl || '' %>" placeholder="https://example.com/webhook" />
+      <button type="submit" class="btn-primary">Fetch</button>
+    </form>
+
+    <% if (result !== null && result !== undefined) { %>
+      <div class="ssrf-result">
+        <div class="ssrf-result-header">
+          <span>Response from: <code><%= requestedUrl %></code></span>
+        </div>
+        <pre><%= result %></pre>
+      </div>
+    <% } %>
+  </div>
+</div>

@@ -1,0 +1,99 @@
+<div class="challenge-detail">
+  <div class="challenge-back">
+    <a href="/challenges">← Back to Challenges</a>
+  </div>
+
+  <div class="challenge-header">
+    <div class="challenge-meta">
+      <span class="badge badge-<%= challenge.category.toLowerCase().replace(/\s+/g,'-').replace(/[()]/g,'') %>">
+        <%= challenge.category %>
+      </span>
+      <span class="difficulty difficulty-<%= challenge.difficulty.toLowerCase() %>"><%= challenge.difficulty %></span>
+      <span class="points-pill">⚡ <%= challenge.points %> pts</span>
+    </div>
+    <h1><%= challenge.title %></h1>
+    <% if (solved) { %><div class="solved-banner">✓ You've solved this challenge!</div><% } %>
+  </div>
+
+  <div class="challenge-body">
+    <div class="challenge-desc">
+      <h3>Description</h3>
+      <p><%= challenge.description %></p>
+    </div>
+
+    <% if (challenge.fileUrl) { %>
+      <div class="challenge-file">
+        <h3>Challenge File</h3>
+        <a href="<%= challenge.fileUrl %>" class="btn-download" download>⬇ Download File</a>
+        <p class="file-note">Files are served raw — no compression, EXIF preserved.</p>
+      </div>
+    <% } %>
+
+    <% if (challenge.hint) { %>
+      <div class="hint-section">
+        <button class="hint-toggle" id="hint-toggle">💡 Show Hint</button>
+        <div class="hint-content hidden" id="hint-content">
+          <p><%= challenge.hint %></p>
+        </div>
+      </div>
+    <% } %>
+
+    <% if (!solved) { %>
+      <div class="flag-submit">
+        <h3>Submit Flag</h3>
+        <div class="flag-form">
+          <input type="text" id="flag-input" placeholder="FLAG{...}" autocomplete="off" />
+          <button id="flag-submit-btn" class="btn-primary">Submit</button>
+        </div>
+        <div id="flag-result" class="flag-result hidden"></div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Hint toggle
+  const hintBtn = document.getElementById('hint-toggle');
+  const hintContent = document.getElementById('hint-content');
+  if (hintBtn) {
+    hintBtn.addEventListener('click', () => {
+      hintContent.classList.toggle('hidden');
+      hintBtn.textContent = hintContent.classList.contains('hidden') ? '💡 Show Hint' : '💡 Hide Hint';
+    });
+  }
+
+  // Flag submission
+  const submitBtn = document.getElementById('flag-submit-btn');
+  const flagInput = document.getElementById('flag-input');
+  const flagResult = document.getElementById('flag-result');
+
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      const flag = flagInput.value.trim();
+      if (!flag) return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Checking...';
+
+      const res = await fetch('/challenges/<%= challenge.id %>/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flag }),
+      });
+      const data = await res.json();
+
+      flagResult.classList.remove('hidden', 'success', 'error');
+      flagResult.classList.add(data.success ? 'success' : 'error');
+      flagResult.textContent = data.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
+
+      if (data.success) {
+        setTimeout(() => location.reload(), 1500);
+      }
+    });
+
+    flagInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitBtn.click();
+    });
+  }
+</script>
