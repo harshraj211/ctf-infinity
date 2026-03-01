@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
+const cookieParser = require("cookie-parser");
 const path = require('path');
 
 const app = express();
@@ -17,14 +18,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parsers
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// Session
+// Session — cookie-based, works on serverless (Vercel)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'ctf-infinity-secret-change-me',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax',
+  },
 }));
 
 // Make session user available in all views
@@ -56,3 +63,5 @@ app.listen(PORT, () => {
   console.log(`\n🚩 CTF INFINITY running at http://localhost:${PORT}`);
   console.log(`🔐 Admin portal: http://localhost:${PORT}/creator\n`);
 });
+
+module.exports = app;
