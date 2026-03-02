@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('f-description').value = d.description;
       document.getElementById('f-flag').value = d.flag;
       document.getElementById('f-hint').value = d.hint || '';
+      document.getElementById('f-hintCost').value = d.hintcost || 10;
       editIdInput.value = d.id;
       formEl.action = `/creator/challenges/${d.id}/edit`;
       formTitle.textContent = 'Edit Challenge';

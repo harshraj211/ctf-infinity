@@ -17,7 +17,7 @@
     </div>
     <div class="nav-links">
       <a href="/challenges" class="<%= typeof title !== 'undefined' && title.includes('Challenge') ? 'active' : '' %>">Challenges</a>
-      <a href="/vuln/search">Lab</a>
+      <a href="/lab">Lab</a>
       <% if (locals.user) { %>
         <span class="nav-score">⚡ <%= user.score %> pts</span>
         <span class="nav-user">@<%= user.username %></span>

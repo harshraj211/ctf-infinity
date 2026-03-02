@@ -35,7 +35,8 @@
     <aside class="creator-sidebar">
       <div class="sidebar-brand">CTF<span>∞</span> <small>Creator</small></div>
       <nav class="sidebar-nav">
-        <a href="#challenges" class="active">Challenges</a>
+        <a href="#" class="active" id="nav-challenges" onclick="showTab('challenges')">Challenges</a>
+        <a href="#" id="nav-machines" onclick="showTab('machines')">Lab Machines</a>
         <a href="/challenges" target="_blank">View Site →</a>
       </nav>
       <form action="/creator/logout" method="POST" class="sidebar-logout">
@@ -44,6 +45,7 @@
     </aside>
 
     <main class="creator-main">
+      <div id="section-challenges">
       <div class="creator-header">
         <h1>Challenge Manager</h1>
         <button class="btn-primary" id="new-challenge-btn">+ New Challenge</button>
@@ -95,6 +97,10 @@
             <div class="form-group full-span">
               <label>Hint <span class="optional">(optional)</span></label>
               <input type="text" name="hint" id="f-hint" placeholder="Optional hint for players..." />
+            </div>
+            <div class="form-group">
+              <label>Hint Cost <span class="optional">(pts to unlock)</span></label>
+              <input type="number" name="hintCost" id="f-hintCost" placeholder="10" min="0" value="10" />
             </div>
             <div class="form-group full-span">
               <label>
@@ -149,6 +155,7 @@
                       data-description="<%= c.description %>"
                       data-flag="<%= c.flag %>"
                       data-hint="<%= c.hint || '' %>"
+                      data-hintcost="<%= c.hintCost || 10 %>"
                     >Edit</button>
                     <form action="/creator/challenges/<%= c.id %>/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete this challenge?')">
                       <button type="submit" class="btn-sm danger">Delete</button>
@@ -162,9 +169,125 @@
           </tbody>
         </table>
       </div>
+
+      </div>
+
+      <!-- Machines Section -->
+      <div id="section-machines" style="display:none">
+        <div class="creator-header">
+          <h1>Lab Machines</h1>
+          <button class="btn-primary" id="new-machine-btn">+ Add Machine</button>
+        </div>
+
+        <div class="creator-form-card" id="machine-form" style="display:none">
+          <h2>Add Lab Machine</h2>
+          <form action="/creator/machines" method="POST">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name" required placeholder="e.g. VulnBank" />
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select name="category">
+                  <option>Web</option>
+                  <option>OSINT</option>
+                  <option>Digital Forensics</option>
+                  <option>Steganography</option>
+                  <option>Cryptography</option>
+                  <option>Reverse Engineering</option>
+                  <option>Miscellaneous</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Difficulty</label>
+                <select name="difficulty">
+                  <option>Easy</option>
+                  <option>Medium</option>
+                  <option>Hard</option>
+                  <option>Insane</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Type</label>
+                <select name="machineType">
+                  <option value="link">External Link / Hosted Site</option>
+                  <option value="machine">Downloadable Machine</option>
+                </select>
+              </div>
+              <div class="form-group full-span">
+                <label>Description</label>
+                <textarea name="description" rows="2" placeholder="What will players practice on this machine?"></textarea>
+              </div>
+              <div class="form-group full-span">
+                <label>URL / Link</label>
+                <input type="text" name="link" placeholder="https://your-vulnerable-site.com or download link" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Add Machine</button>
+              <button type="button" class="btn-ghost" onclick="document.getElementById('machine-form').style.display='none'">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="challenges-table-wrap">
+          <table class="challenges-table">
+            <thead>
+              <tr><th>Name</th><th>Category</th><th>Difficulty</th><th>Type</th><th>Link</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <% if (typeof machines !== 'undefined' && machines.length > 0) { %>
+                <% machines.forEach(m => { %>
+                  <tr>
+                    <td><strong><%= m.name %></strong></td>
+                    <td><span class="badge badge-<%= m.category.toLowerCase().replace(/\s+/g,'-') %>"><%= m.category %></span></td>
+                    <td><span class="difficulty difficulty-<%= m.difficulty.toLowerCase() %>"><%= m.difficulty %></span></td>
+                    <td><%= m.machineType === 'link' ? '🔗 Link' : '📦 Machine' %></td>
+                    <td><% if (m.link) { %><a href="<%= m.link %>" target="_blank" class="file-link">Open →</a><% } else { %><span class="no-file">—</span><% } %></td>
+                    <td>
+                      <form action="/creator/machines/<%= m.id %>/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete this machine?')">
+                        <button type="submit" class="btn-sm danger">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="6" class="empty-table">No machines yet. Add your first one!</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </main>
   </div>
 <% } %>
+
+<script>
+function showTab(tab) {
+  const challengesSection = document.getElementById('section-challenges');
+  const machinesSection = document.getElementById('section-machines');
+  const navChallenges = document.getElementById('nav-challenges');
+  const navMachines = document.getElementById('nav-machines');
+
+  if (challengesSection) {
+    challengesSection.style.display = tab === 'challenges' ? 'block' : 'none';
+  }
+  if (machinesSection) {
+    machinesSection.style.display = tab === 'machines' ? 'block' : 'none';
+  }
+  if (navChallenges) {
+    navChallenges.classList.toggle('active', tab === 'challenges');
+  }
+  if (navMachines) {
+    navMachines.classList.toggle('active', tab === 'machines');
+  }
+}
+
+document.getElementById('new-machine-btn')?.addEventListener('click', () => {
+  document.getElementById('machine-form').style.display = 'block';
+});
+</script>
 
 <script src="/js/creator.js"></script>
 </body>

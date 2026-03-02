@@ -24,17 +24,35 @@
     <% if (challenge.fileUrl) { %>
       <div class="challenge-file">
         <h3>Challenge File</h3>
-        <a href="<%= challenge.fileUrl %>" class="btn-download" download>⬇ Download File</a>
+        <a href="/challenges/download?url=<%= encodeURIComponent(challenge.fileUrl) %>" class="btn-download">⬇ Download File</a>
         <p class="file-note">Files are served raw — no compression, EXIF preserved.</p>
       </div>
     <% } %>
 
     <% if (challenge.hint) { %>
       <div class="hint-section">
-        <button class="hint-toggle" id="hint-toggle">💡 Show Hint</button>
-        <div class="hint-content hidden" id="hint-content">
-          <p><%= challenge.hint %></p>
+        <div class="hint-header">
+          <div>
+            <h3>💡 Hint</h3>
+            <p class="hint-cost-label">Costs <strong><%= challenge.hintCost || 10 %> pts</strong> to unlock</p>
+          </div>
+          <% if (!hintUnlocked) { %>
+            <button class="btn-unlock-hint" id="hint-unlock-btn">
+              🔓 Unlock for <%= challenge.hintCost || 10 %> pts
+            </button>
+          <% } else { %>
+            <span class="hint-unlocked-badge">✓ Unlocked</span>
+          <% } %>
         </div>
+        <% if (hintUnlocked) { %>
+          <div class="hint-content">
+            <p><%= challenge.hint %></p>
+          </div>
+        <% } else { %>
+          <div class="hint-locked">
+            <span>🔒 Unlock this hint to reveal it</span>
+          </div>
+        <% } %>
       </div>
     <% } %>
 
@@ -52,13 +70,21 @@
 </div>
 
 <script>
-  // Hint toggle
-  const hintBtn = document.getElementById('hint-toggle');
-  const hintContent = document.getElementById('hint-content');
+  const hintBtn = document.getElementById('hint-unlock-btn');
   if (hintBtn) {
-    hintBtn.addEventListener('click', () => {
-      hintContent.classList.toggle('hidden');
-      hintBtn.textContent = hintContent.classList.contains('hidden') ? '💡 Show Hint' : '💡 Hide Hint';
+    hintBtn.addEventListener('click', async () => {
+      if (!confirm('Spend <%= challenge.hintCost || 10 %> points to unlock this hint?')) return;
+      hintBtn.disabled = true;
+      hintBtn.textContent = 'Unlocking...';
+      const res = await fetch('/challenges/<%= challenge.id %>/hint', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        location.reload();
+      } else {
+        alert(data.message);
+        hintBtn.disabled = false;
+        hintBtn.textContent = '🔓 Unlock for <%= challenge.hintCost || 10 %> pts';
+      }
     });
   }
 

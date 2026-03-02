@@ -1,0 +1,35 @@
+<div class="page-header">
+  <h1>Lab</h1>
+  <p class="page-subtitle">Practice on real vulnerable machines and challenges.</p>
+</div>
+
+<% if (machines.length === 0) { %>
+  <div class="lab-empty">
+    <div class="lab-empty-icon">🧪</div>
+    <h3>No machines available yet</h3>
+    <p>The admin hasn't added any lab machines yet. Check back soon!</p>
+  </div>
+<% } else { %>
+  <div class="machines-grid">
+    <% machines.forEach(m => { %>
+      <div class="machine-card">
+        <div class="machine-top">
+          <span class="badge badge-<%= m.category.toLowerCase().replace(/\s+/g,'-') %>"><%= m.category %></span>
+          <span class="difficulty difficulty-<%= m.difficulty.toLowerCase() %>"><%= m.difficulty %></span>
+        </div>
+        <h3 class="machine-title"><%= m.name %></h3>
+        <p class="machine-desc"><%= m.description %></p>
+        <div class="machine-footer">
+          <span class="machine-type-badge">
+            <%= m.machineType === 'link' ? '🔗 External Link' : '📦 Machine' %>
+          </span>
+          <% if (m.link) { %>
+            <a href="<%= m.link %>" target="_blank" rel="noopener" class="btn-primary machine-btn">
+              Launch →
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>

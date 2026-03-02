@@ -44,8 +44,9 @@ app.use((req, res, next) => {
 // Routes
 app.use('/', require('./routes/auth'));
 app.use('/challenges', require('./routes/challenges'));
+app.use('/lab', require('./routes/lab'));
 app.use('/creator', require('./routes/creator'));
-app.use('/vuln', require('./routes/vulnerable'));
+// app.use('/vuln', require('./routes/vulnerable')); // removed — lab is now creator-managed
 
 // 404
 app.use((req, res) => {

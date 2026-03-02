@@ -22,11 +22,34 @@ router.post('/auth/verify', async (req, res) => {
 
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
+    
+    // Load score from Firestore if available
+    let score = 0;
+    const { db } = require('../config/firebase');
+    if (db) {
+      try {
+        const userDoc = await db.collection('users').doc(decoded.uid).get();
+        if (userDoc.exists) {
+          score = userDoc.data().score || 0;
+        } else {
+          // First time user — create their record
+          await db.collection('users').doc(decoded.uid).set({
+            username: decoded.email.split('@')[0],
+            email: decoded.email,
+            score: 0,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.warn('Could not load user score:', e.message);
+      }
+    }
+
     req.session.user = {
       id: decoded.uid,
       username: decoded.email.split('@')[0],
       email: decoded.email,
-      score: 0,
+      score,
     };
 
     // Seed global ctfUsers if not present
@@ -36,7 +59,7 @@ router.post('/auth/verify', async (req, res) => {
         id: decoded.uid,
         username: decoded.email.split('@')[0],
         email: decoded.email,
-        score: 0,
+        score,
         private: { notes: 'No private data' },
       });
     }
